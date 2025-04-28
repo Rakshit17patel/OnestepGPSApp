@@ -1,0 +1,88 @@
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
+import React, { useContext, useEffect } from 'react'
+import { TouchableOpacity } from 'react-native-gesture-handler';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
+import Theme from '../utils/themeColors';
+import { scale } from '../utils/scaling';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { ThemeContext } from '../context/Theme';
+import { getScreenBuilder } from './ScreenRegistry';
+
+const BottomTab = createBottomTabNavigator();
+const Stack = createStackNavigator();
+
+export default function Router() {
+const { systemThemeMode,appColorTheme,} = useContext(ThemeContext)
+  const appTheme = Theme[appColorTheme=='systemDefault'?systemThemeMode:appColorTheme]
+  const navigationObj = useNavigation();
+
+  useEffect(() => {
+    navigationObj.navigate("Home")
+},[])
+
+
+    // This is the stack navigator for the DeviceDetailsPage
+const HomePageStack = ()=> {
+    return (
+        <Stack.Navigator initialRouteName="Home" screenOptions={{
+            headerMode: 'screen',
+        }}>
+            <Stack.Screen key="Home" name="Home" component={getScreenBuilder(`HomePage`)} options={{headerShown: false }} />
+            <Stack.Screen key="DeviceDetails" name="DeviceDetails" component={getScreenBuilder(`DeviceDetailsPage`)} options={{headerShown: false }} />
+        </Stack.Navigator>
+    );
+    }
+
+
+  return (<BottomTab.Navigator
+    initialRouteName={"Home"}
+    // tabBarOptions={{
+      // }}
+      screenOptions={{
+        tabBarLabelStyle: { fontSize:scale(12),marginBottom:scale(5),color:appTheme?.white  },
+        tabBarStyle: { height:scale(60) ,padding:scale(10),backgroundColor:appTheme?.appThemePrimary },
+        keyboardHidesTabBar: true,
+        headerShown: false,
+        tabBarShowLabel:true, //hide the labels of bootm tab bar
+        tabBarActiveTintColor: appTheme?.appThemePrimary,
+    }}>
+    <BottomTab.Screen
+        
+        name="Home"
+        // getScreenBuilder(`DeviceDetailsPage`)
+        component={()=>{return<></>}}
+        options={{
+            // tabBarShowLabel:true,
+            tabBarIcon: ({ focused, color }) => (
+                <TouchableOpacity activeOpacity={0.5} style={{ flexDirection: 'column', alignItems: 'center' }}>
+                    <MaterialCommunityIcons
+                        name={focused?"widgets":"widgets-outline"}
+                        style={{fontSize: focused?scale(30): scale(25), fontWeight: 'bold',color: focused?colors?.appThemeColor:colors?.white,}}
+                        color={appTheme?.white}
+                    />
+                </TouchableOpacity>
+            )
+        }}
+    />
+
+    <BottomTab.Screen
+        
+        name="MapView"
+        // component={getScreenBuilder(`MapView`)}
+        component={()=>{return<></>}}
+        options={{
+            tabBarIcon: ({ focused, color }) => (
+                <TouchableOpacity activeOpacity={0.5} style={{ flexDirection: 'column', alignItems: 'center' }}>
+                    <MaterialCommunityIcons
+                        name={focused?"widgets":"widgets-outline"}
+                        style={{fontSize: focused?scale(30): scale(25), fontWeight: 'bold',color: focused?colors?.appThemeColor:colors?.white,}}
+                        color={appTheme?.white}
+                    />
+                </TouchableOpacity>
+            )
+        }}
+    />
+    </BottomTab.Navigator>
+  )
+}
