@@ -3,11 +3,18 @@ import Svg, { Path } from 'react-native-svg'
 import { View, StatusBar, TouchableOpacity, Linking,Text, useColorScheme } from 'react-native'
 import theme from '../utils/themeColors'
 import { scale } from '../utils/scaling'
+import { Callout } from 'react-native-maps'
 
 function CustomMarker(props) {
   const currentTheme = theme[useColorScheme()]
   return (
     <View style={{position: 'relative', }}>
+      {/* <Callout>
+                            <View style={{maxWidth: scale(200),}}>
+                              <Text bold style={{ fontSize:scale(14),color:'white' }}>{props?.displayName}</Text>
+                              <Text bold style={{ fontSize:scale(12),color:'green' }}>{props?.displayName}</Text>
+                            </View>
+                          </Callout> */}
       <Svg viewBox="0 0 512 512" {...props}>
         <Path
           fill={currentTheme?.appThemeSecondary}
@@ -19,13 +26,14 @@ function CustomMarker(props) {
         />
       </Svg>
       <Text bold numberOfLines={1} ellipsizeMode="tail" style={{ right: 1, top: -2,fontSize:scale(14),position:'absolute',color:'white' }}>
-        <Text bold style={{ fontSize:scale(14),color:'white' }}>{props?.index+1}</Text> #{props?.displayName}
+        {/* <Text bold style={{ fontSize:scale(14),color:'white' }}>{props?.index+1}</Text> #{props?.displayName} */}
+        <Text bold style={{ fontSize:scale(14),color:'white' }}>#{props?.index+1}             </Text>
       </Text>
       <Text bold numberOfLines={1} ellipsizeMode="tail" style={{ right: -1, top: -2,fontSize:scale(14),position:'absolute',color:'white' }}>
-        <Text bold style={{ fontSize:scale(14),color:'white' }}>{props?.index+1}</Text> #{props?.displayName}
+        <Text bold style={{ fontSize:scale(14),color:'white' }}>#{props?.index+1}             </Text>
       </Text>
       <Text bold numberOfLines={1} ellipsizeMode="tail" style={{ right: 1, top: -2,fontSize:scale(14),position:'absolute',color:'black' }}>
-        <Text bold style={{ fontSize:scale(14),color:'red' }}>{props?.index+1}</Text> #{props?.displayName}
+        <Text bold style={{ fontSize:scale(14),color:'red' }}>#{props?.index+1}             </Text>
       </Text>
       
     </View>

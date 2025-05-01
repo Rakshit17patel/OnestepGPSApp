@@ -1,6 +1,6 @@
 import React, { useState, useContext, useLayoutEffect, useRef,useCallback, useEffect } from 'react'
 import { View, TouchableOpacity, StatusBar, Linking, useColorScheme, ScrollView, Alert, StyleSheet } from 'react-native'
-import MapView, {  Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps'
+import MapView, {  Marker, Polyline, PROVIDER_GOOGLE, Callout  } from 'react-native-maps'
 import { useNavigation, useFocusEffect } from '@react-navigation/native'
 import CustomMarker from '../../Assets/CustomMarker'
 import theme from '../../utils/themeColors';
@@ -66,6 +66,42 @@ export default function Track(props) {
     })
   })
 
+  
+  // return (
+  //   <MapView
+  //     provider={PROVIDER_GOOGLE}
+  //     style={{ flex: 1 }}
+  //     initialRegion={{
+  //       latitude: 37.7749,
+  //       longitude: -122.4194,
+  //       latitudeDelta: 0.0922,
+  //       longitudeDelta: 0.0421,
+  //     }}
+  //   >
+  //     {apiData?.map((device,index) =>
+  //       <Marker
+  //         key={device?.device_id}
+  //         coordinate={{
+  //           latitude: 37.7749,
+  //           longitude: -122.4194,
+  //         }}
+  //         title={device?.display_name}
+  //         description={device?.active_state}
+  //         pinColor={colors?.appThemeSecondary} // Custom pin color
+  //       >
+  //         {/* Custom Marker Icon with Title and Description */}
+  //         <View style={styles.markerContainer}>
+  //           <Text style={styles.markerTitle}>{device?.display_name}</Text>
+  //           <Text style={styles.markerDescription}>{device?.active_state}</Text>
+  //         </View>
+  //       </Marker>
+  //     )}
+  //   </MapView>
+  // );
+
+
+
+
   return (
     <>
       <View style={{flex:1}}>
@@ -122,7 +158,7 @@ export default function Track(props) {
         >
           
           {apiData?.map((device,index) =>
-              <Marker key={index} coordinate={({ latitude: (device?.latest_device_point?.lat), longitude: (device?.latest_device_point?.lng) })} style={{}} >
+              <Marker key={index} title={device?.display_name} description={device?.active_state} coordinate={({ latitude: (device?.latest_device_point?.lat), longitude: (device?.latest_device_point?.lng) })} style={{}} pinColor={colors?.appThemeSecondary}  tracksViewChanges={false}>
                     {<CustomMarker index={index} displayName={device?.display_name} width={ scale(60)} height={scale(50)} />}
               </Marker>
             )}
@@ -136,3 +172,27 @@ export default function Track(props) {
     </>
   )
 }
+
+
+const styles = StyleSheet.create({
+  markerContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: scale(80),
+    height: scale(60),
+    backgroundColor: 'rgba(255,255,255,0.8)', // Background for text readability
+    borderRadius: scale(10),
+    padding: scale(5),
+  },
+  markerTitle: {
+    fontSize: scale(12),
+    fontWeight: 'bold',
+    color: 'black',
+    textAlign: 'center',
+  },
+  markerDescription: {
+    fontSize: scale(10),
+    color: 'grey',
+    textAlign: 'center',
+  },
+});
