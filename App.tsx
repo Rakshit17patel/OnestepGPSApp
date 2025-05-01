@@ -9,7 +9,7 @@ import React, { useEffect, useState } from 'react';
 import type {PropsWithChildren} from 'react';
 import {
   ActivityIndicator,
-  SafeAreaView,
+  Platform,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -29,7 +29,7 @@ import {
 import { SaveData as StoreItem,RetrieveData as getItemData } from './src/utils/AsyncStorageHandeler';
 import Theme from './src/utils/themeColors';
 // import SplashScreen from 'react-native-splash-screen';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeContext } from './src/context/Theme';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import NavigationServices from './src/utils/NavigationServices';
@@ -75,6 +75,12 @@ function App(): React.JSX.Element {
   }
 
 
+  useEffect(() => {
+    if (Platform.OS === 'android') {
+      StatusBar.setBarStyle('light-content'); // Set the bar style if not working by default
+      StatusBar.setBackgroundColor(colors?.appThemePrimary || '#000'); // Set the status bar color
+    }
+  }, []);
 
 
   const navTheme = {
@@ -88,16 +94,16 @@ function App(): React.JSX.Element {
 
   return (
     <SafeAreaView style={{flex:1,backgroundColor:colors?.backgroundColor}}>
-    <SafeAreaProvider >
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <StatusBar backgroundColor={colors?.appThemePrimary} barStyle={'light-content'}/>
-      <ThemeContext.Provider value={{ systemThemeMode,appColorTheme, setAppColorTheme }}>
-          <NavigationContainer theme={navTheme} ref={(ref) => NavigationServices.setTopLevelNavigator(ref)}>
-                <Router />
-          </NavigationContainer>
-      </ThemeContext.Provider>
-    </GestureHandlerRootView>
-    </SafeAreaProvider>
+      <SafeAreaProvider >
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <StatusBar backgroundColor={colors?.appThemePrimary} barStyle={'light-content'} translucent={false}/>
+          <ThemeContext.Provider value={{ systemThemeMode,appColorTheme, setAppColorTheme }}>
+              <NavigationContainer theme={navTheme} ref={(ref) => NavigationServices.setTopLevelNavigator(ref)}>
+                    <Router />
+              </NavigationContainer>
+          </ThemeContext.Provider>
+        </GestureHandlerRootView>
+      </SafeAreaProvider>
     </SafeAreaView>
   );
 }

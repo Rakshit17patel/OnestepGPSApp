@@ -8,9 +8,6 @@ import { scale } from '../utils/scaling';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { ThemeContext } from '../context/Theme';
 import { getScreenBuilder } from './ScreenRegistry';
-import HomePage from '../screens/HomePage/HomePage';
-import DeviceDetailPage from '../screens/DeviceDetailPage/DeviceDetailPage';
-import MapView from '../screens/MapView/MapView';
 
 const BottomTab = createBottomTabNavigator();
 const Stack = createStackNavigator();
