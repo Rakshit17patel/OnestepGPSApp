@@ -14,44 +14,45 @@ let screenBuilderRegistry = new Map<ScreenName, ScreenBuilderType>();
 /**
  * Returns a function for lazily loading a screen.
  */
-export function getScreenBuilder(screen: ScreenName, parent: any): ScreenBuilderType {
+export function getScreenBuilder(screen: ScreenName): ScreenBuilderType {
     if (!screenBuilderRegistry.has(screen)) {
         let cached: ScreenType | null = null;
         const builder = () => {
             if (cached === null) {
                 const start = global.performance.now();
-                cached = getScreen(screen, parent);
+                cached = getScreen(screen);
                 if (typeof cached === 'function') {
-                    cached = React.memo(cached);
+                    cached = React.memo(cached);  // Memoize for performance
                 }
                 const end = global.performance.now();
-                //console.log(`😄 Lazily registered Screen "${screen}" in ${end - start}ms!`,);
+                console.log(`Lazily registered Screen "${screen}" in ${end - start}ms!`);
             }
             return cached;
         };
         screenBuilderRegistry.set(screen, builder);
     }
 
-    return screenBuilderRegistry.get(screen);
+    return screenBuilderRegistry.get(screen)!;
 }
 
-function getScreen(screenName: any, parent: any): ScreenType {
-
+function getScreen(screenName: ScreenName): ScreenType {
     switch (screenName) {
         case 'AppLoader':
-            return require('../screens/AppLoader')?.default;
+            return require('../screens/AppLoader').default;
         case 'HomePage':
-            return require('../screens/HomePage/HomePage')?.default;
+            return require('../screens/HomePage/HomePage').default;
         case 'DeviceDetailsPage':
-            return require('../screens/DeviceDetailPage/DeviceDetailPage')?.default;
+            return require('../screens/DeviceDetailPage/DeviceDetailPage').default;
         case 'MapView':
-            return require('../screens/MapView/MapView')?.default;
+            return require('../screens/MapView/MapView').default;
+        default:
+            return assertUnreachableScreen(screenName);
     }
-    return assertUnreachableScreen(screenName);
 }
 
 function assertUnreachableScreen(screenName: never): never {
-    throw new Error(
-        `getScreen(...): Failed to create screen builder for screen name "${screenName}" - the requested screen was not found.`,
-    );
+    throw new Error(`Failed to create screen builder for screen name "${screenName}"`);
 }
+
+// Usage example:
+const HomePageComponent = getScreenBuilder('HomePage')(); // Ensure to call the builder function

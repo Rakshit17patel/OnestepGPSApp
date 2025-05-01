@@ -8,6 +8,9 @@ import { scale } from '../utils/scaling';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { ThemeContext } from '../context/Theme';
 import { getScreenBuilder } from './ScreenRegistry';
+import HomePage from '../screens/HomePage/HomePage';
+import DeviceDetailPage from '../screens/DeviceDetailPage/DeviceDetailPage';
+import MapView from '../screens/MapView/MapView';
 
 const BottomTab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -28,8 +31,9 @@ const HomePageStack = ()=> {
         <Stack.Navigator initialRouteName="Home" screenOptions={{
             headerMode: 'screen',
         }}>
-            <Stack.Screen key="Home" name="Home" component={getScreenBuilder(`HomePage`)} options={{headerShown: false }} />
-            <Stack.Screen key="DeviceDetails" name="DeviceDetails" component={getScreenBuilder(`DeviceDetailsPage`)} options={{headerShown: false }} />
+            <Stack.Screen key="Home" name="Home" component={getScreenBuilder(`HomePage`)()} options={{headerShown: false }} />
+            {/* <Stack.Screen key="Home" name="Home" component={HomePage} options={{headerShown: false }} /> */}
+            <Stack.Screen key="DeviceDetails" name="DeviceDetails" component={getScreenBuilder('DeviceDetailsPage')()} options={{headerShown: false }} />
         </Stack.Navigator>
     );
     }
@@ -51,14 +55,14 @@ const HomePageStack = ()=> {
         
         name="Home"
         // getScreenBuilder(`DeviceDetailsPage`)
-        component={()=>{return<></>}}
+        component={HomePageStack}
         options={{
             // tabBarShowLabel:true,
             tabBarIcon: ({ focused, color }) => (
                 <TouchableOpacity activeOpacity={0.5} style={{ flexDirection: 'column', alignItems: 'center' }}>
                     <MaterialCommunityIcons
-                        name={focused?"widgets":"widgets-outline"}
-                        style={{fontSize: focused?scale(30): scale(25), fontWeight: 'bold',color: focused?colors?.appThemeColor:colors?.white,}}
+                        name={"home"}
+                        style={{fontSize: focused?scale(30): scale(25), fontWeight: 'bold',color: focused?appTheme?.appThemeSecondary:appTheme?.white,}}
                         color={appTheme?.white}
                     />
                 </TouchableOpacity>
@@ -68,15 +72,15 @@ const HomePageStack = ()=> {
 
     <BottomTab.Screen
         
-        name="MapView"
-        // component={getScreenBuilder(`MapView`)}
-        component={()=>{return<></>}}
+        name="Track"
+        component={getScreenBuilder('MapView')()}
+        // component={()=>{return<></>}}
         options={{
             tabBarIcon: ({ focused, color }) => (
                 <TouchableOpacity activeOpacity={0.5} style={{ flexDirection: 'column', alignItems: 'center' }}>
                     <MaterialCommunityIcons
-                        name={focused?"widgets":"widgets-outline"}
-                        style={{fontSize: focused?scale(30): scale(25), fontWeight: 'bold',color: focused?colors?.appThemeColor:colors?.white,}}
+                        name={"map-marker-multiple"}
+                        style={{fontSize: focused?scale(30): scale(25), fontWeight: 'bold',color: focused?appTheme?.appThemeSecondary:appTheme?.white,}}
                         color={appTheme?.white}
                     />
                 </TouchableOpacity>

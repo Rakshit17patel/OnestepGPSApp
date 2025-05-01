@@ -34,44 +34,8 @@ import { ThemeContext } from './src/context/Theme';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import NavigationServices from './src/utils/NavigationServices';
 import Router from './src/routing/Router';
-import AppLoader from './src/screens/AppLoader';
-import { createStackNavigator } from '@react-navigation/stack';
-import { getScreenBuilder } from './src/routing/ScreenRegistry';
-import HomePage from './src/screens/HomePage/HomePage';
-import DeviceDetailPage from './src/screens/DeviceDetailPage/DeviceDetailPage';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-
-const Stack = createStackNavigator();
-
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
-
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
 
 function App(): React.JSX.Element {
   const [appColorTheme, setAppColorTheme] = useState('')
@@ -90,6 +54,7 @@ function App(): React.JSX.Element {
   
   const checkThemeMode = async ()=>{
     let theme = await getItemData('theme');
+    console.debug("🚀 ~ file: App.tsx ~ line 94 ~ checkThemeMode ~ theme", theme)
     setAppColorTheme(theme);
     // SplashScreen.hide()
   }
@@ -116,52 +81,22 @@ function App(): React.JSX.Element {
     ...DefaultTheme,
     colors: {
       ...DefaultTheme.colors,
-      background: colors?.navColor,
+      background: colors?.backgroundColor,
       text: colors?.heading
     },
-  };
-
-  const HomePage = () => {
-    return (
-      <View>
-        <Text>Home Page</Text>
-      </View>
-    );
-  };
-  
-  const DeviceDetailPage = () => {
-    return (
-      <View>
-        <Text>Device Details Page</Text>
-      </View>
-    );
-  };
-  
+  };  
 
   return (
-    <SafeAreaView style={{flex:1,backgroundColor:colors?.navColor}}>
+    <SafeAreaView style={{flex:1,backgroundColor:colors?.backgroundColor}}>
     <SafeAreaProvider >
-      <StatusBar backgroundColor={colors?.appThemeBottomTabColor} barStyle={'light-content'}/>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <StatusBar backgroundColor={colors?.appThemePrimary} barStyle={'light-content'}/>
       <ThemeContext.Provider value={{ systemThemeMode,appColorTheme, setAppColorTheme }}>
-        <NavigationContainer theme={navTheme} ref={(ref) => NavigationServices.setTopLevelNavigator(ref)}>
-              {/* <Router /> */}
-              <AppLoader />
-               {/* <Stack.Navigator initialRouteName="Home" screenOptions={{
-                          headerMode: 'screen',
-                      }}>
-                    <Stack.Screen key="Home" name="Home" component={HomePage} options={{headerShown: false }} />
-                    <Stack.Screen key="DeviceDetails" name="DeviceDetails" component={DeviceDetailPage} options={{headerShown: false }} />
-                </Stack.Navigator> */}
-        </NavigationContainer>
-        {/* <PaperProvider theme={{
-            ...DefaultTheme,
-            colors: {
-              ...DefaultTheme.colors,
-              primary: colors?.appThemePrimary,
-            },
-          }}>
-        </PaperProvider> */}
-    </ThemeContext.Provider>
+          <NavigationContainer theme={navTheme} ref={(ref) => NavigationServices.setTopLevelNavigator(ref)}>
+                <Router />
+          </NavigationContainer>
+      </ThemeContext.Provider>
+    </GestureHandlerRootView>
     </SafeAreaProvider>
     </SafeAreaView>
   );
