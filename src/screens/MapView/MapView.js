@@ -34,17 +34,23 @@ export default function Track(props) {
     latitude: latitude || LATITUDE,
   })
 
-    useFocusEffect(React.useCallback(()=>{
-      fetchDevicesData()
-    },[]))
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const intervalId = setInterval(() => {
+        fetchDevicesData();
+      }, 5000); // 5 seconds
+      return () => clearInterval(intervalId);
+    }, [])
+  );
   
-    const fetchDevicesData = async()=>{
-      let APIKEY = "Xl-8_ceibpMHqr4YZ72uFy5xQfjbOPXstocE8b_Zkmw"
-      let api = `https://track.onestepgps.com/v3/api/public/device?latest_point=true&api-key=${APIKEY}`
-      // const response = await fetch(api);
-      const response = await ApiService.get(api);
-      setApiData(response?.result_list || [])
-    }
+  const fetchDevicesData = async()=>{
+    let APIKEY = "Xl-8_ceibpMHqr4YZ72uFy5xQfjbOPXstocE8b_Zkmw"
+    let api = `https://track.onestepgps.com/v3/api/public/device?latest_point=true&api-key=${APIKEY}`
+    // const response = await fetch(api);
+    const response = await ApiService.get(api);
+    setApiData(response?.result_list || [])
+  }
 
   let mapRef = null
   useLayoutEffect(() => {
