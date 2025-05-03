@@ -25,10 +25,10 @@ const { systemThemeMode,appColorTheme,} = useContext(ThemeContext)
     // This is the stack navigator for the DeviceDetailsPage
 const HomePageStack = ()=> {
     return (
-        <Stack.Navigator initialRouteName="Home" screenOptions={{
+        <Stack.Navigator initialRouteName="HomeStack" screenOptions={{
             headerMode: 'screen',
         }}>
-            <Stack.Screen key="Home" name="Home" component={getScreenBuilder(`HomePage`)()} options={{headerShown: false }} />
+            <Stack.Screen key="HomeStack" name="HomeStack" component={getScreenBuilder(`HomePage`)()} options={{headerShown: false }} />
             {/* <Stack.Screen key="Home" name="Home" component={HomePage} options={{headerShown: false }} /> */}
             <Stack.Screen key="DeviceDetails" name="DeviceDetails" component={getScreenBuilder('DeviceDetailsPage')()} options={{headerShown: false }} />
         </Stack.Navigator>
@@ -37,7 +37,7 @@ const HomePageStack = ()=> {
 
 
   return (<BottomTab.Navigator
-    initialRouteName={"HomeStack"}
+    initialRouteName={"Home"}
     // tabBarOptions={{
       // }}
       screenOptions={{
@@ -50,7 +50,7 @@ const HomePageStack = ()=> {
     }}>
     <BottomTab.Screen
         
-        name="HomeStack"
+        name="Home"
         // getScreenBuilder(`DeviceDetailsPage`)
         component={HomePageStack}
         options={{

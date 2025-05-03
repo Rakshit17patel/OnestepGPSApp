@@ -1,5 +1,5 @@
 import React, { useState, useContext, useLayoutEffect, useRef,useCallback, useEffect } from 'react'
-import { View, TouchableOpacity, StatusBar, Linking, useColorScheme, ScrollView, Alert, StyleSheet } from 'react-native'
+import { View, TouchableOpacity, StatusBar, Linking, useColorScheme, ScrollView, Alert, StyleSheet, ActivityIndicator } from 'react-native'
 import MapView, {  Marker, Polyline, PROVIDER_GOOGLE, Callout  } from 'react-native-maps'
 import { useNavigation, useFocusEffect } from '@react-navigation/native'
 import CustomMarker from '../../Assets/CustomMarker'
@@ -9,6 +9,7 @@ import { ThemeContext } from '../../context/Theme'
 import { scale } from '../../utils/scaling';
 import ApiService from '../../utils/apiService'
 import Ionicons from 'react-native-vector-icons/Ionicons'
+import { SaveData as StoreItem,RetrieveData as getItemData } from '../../utils/AsyncStorageHandeler';
 
 
 const LATITUDE = 37.7749
@@ -22,6 +23,7 @@ export default function Track(props) {
   const navigationObj = useNavigation();
   const [apiData,setApiData] = useState([])
   const { systemThemeMode,appColorTheme, setAppColorTheme} = useContext(ThemeContext)
+  console.log("🚀 ~ file: MapView.js ~ line 25 ~ Track ~ systemThemeMode", systemThemeMode, appColorTheme)
   const colors = theme[appColorTheme=='systemDefault'?systemThemeMode:appColorTheme];
   const { longitude, latitude, ordersLocation, origin={ latitude: 37.7749, longitude: -122.4194 }, destination={ latitude: 37.78825, longitude: -122.4324 },routeToken,encodedPolylines } = props?.route?.params || {}
   const navigation = useNavigation()
@@ -39,23 +41,40 @@ export default function Track(props) {
     }, [])
   );
 
-  // useFocusEffect(
-  //   React.useCallback(() => {
-  //     const intervalId = setInterval(() => {
-  //       fetchDevicesData();
-  //       console.log("🚀 ~ file: MapView.js ~ line 47 ~ intervalId ~ fetchDevicesData")
-  //     }, 10000); // 5 seconds
-  //     return () => clearInterval(intervalId);
-  //   }, [])
-  // );
+  useFocusEffect(
+    React.useCallback(() => {
+      const intervalId = setInterval(() => {
+        fetchDevicesData();
+        console.log("🚀 ~ file: MapView.js ~ line 47 ~ intervalId ~ fetchDevicesData")
+      }, 10000); // 5 seconds
+      return () => clearInterval(intervalId);
+    }, [])
+  );
   
   const fetchDevicesData = async()=>{
     let APIKEY = "Xl-8_ceibpMHqr4YZ72uFy5xQfjbOPXstocE8b_Zkmw"
     let api = `https://track.onestepgps.com/v3/api/public/device?latest_point=true&api-key=${APIKEY}`
     // const response = await fetch(api);
     const response = await ApiService.get(api);
-    // console.log("🚀 ~ file: MapView.js ~ line 52 ~ fetchDevicesData ~ response", response)
-    setApiData(response?.result_list || [])
+    let apiData = await getItemData('apiData');
+
+    // Merge locally saved data and latest api data
+    if(apiData && apiData?.length>0){
+      mergedData = response?.result_list?.map(apiItem => {
+        const localItem = apiData.find(local => local.device_id === apiItem.device_id);
+        if (localItem) {
+          return {
+            ...apiItem, // Take all fields from the API
+            display_name: localItem.display_name,
+            make: localItem.make,              
+            model: localItem.model,            
+            factory_id: localItem.factory_id   
+          };
+        }
+        return apiItem;
+      });
+    }
+    setApiData(apiData)
   }
 
   let mapRef = null
@@ -117,22 +136,23 @@ export default function Track(props) {
   return (
     <>
       <View style={{flex:1}}>
+      {/* <ActivityIndicator /> */}
       {coordinates && apiData?.length>0 && <MapView
           ref={ref => {mapRef = ref}}
-          initialRegion={coordinates}
-          // initialRegion={{
-          //   longitudeDelta: 0.003,
-          //   latitudeDelta: 0.003,
-          //   longitude: -122.4194,
-          //   latitude: 37.7749,
-          // }}
-          region={coordinates}
-          // region={{
-          //   longitudeDelta: 0.003,
-          //   latitudeDelta: 0.003,
-          //   longitude: -122.4194,
-          //   latitude: 37.7749,
-          // }}
+          // initialRegion={coordinates}
+          initialRegion={{
+            longitudeDelta: 40,
+            latitudeDelta: 40,
+            longitude: -122.4194,
+            latitude: 37.7749,
+          }}
+          // region={coordinates}
+          region={{
+            longitudeDelta: 40,
+            latitudeDelta: 40,
+            longitude: -122.4194,
+            latitude: 37.7749,
+          }}
           style={{ height: '100%' }}
           provider={PROVIDER_GOOGLE}
           showsTraffic={false}
@@ -146,7 +166,9 @@ export default function Track(props) {
           maximumZ={20}
           flipY={false}
           customMapStyle={appColorTheme=='systemDefault'?systemThemeMode:appColorTheme === 'dark' ? mapDarkMode : []}
-          userInterfaceStyle={appColorTheme=='systemDefault'?systemThemeMode:appColorTheme === 'dark' ? mapDarkMode :'light'}
+          // userInterfaceStyle={appColorTheme=='systemDefault'?systemThemeMode:appColorTheme === 'dark' ? mapDarkMode :mapDarkMode}
+          // customMapStyle={mapDarkMode}
+          // userInterfaceStyle={mapDarkMode}
           showsUserLocation
           showsMyLocationButton
           loadingEnabled={true}
@@ -169,8 +191,8 @@ export default function Track(props) {
           
           {apiData?.map((device,index) =>
               // <Marker key={index} title={device?.display_name} description={device?.active_state} coordinate={{ longitude: -122.4194, latitude: 37.7749, }} style={{}} pinColor={colors?.appThemeSecondary}  tracksViewChanges={false}>
-              <Marker key={index} title={device?.display_name + `(${device?.latest_device_point?.device_state?.drive_status})`} description={device?.active_state} coordinate={({ latitude: (device?.latest_device_point?.lat), longitude: (device?.latest_device_point?.lng) })} style={{}} pinColor={colors?.appThemeSecondary}  tracksViewChanges={false}>
-                    {<CustomMarker index={index} displayName={device?.display_name} width={ scale(30)} height={scale(50)} />}
+              <Marker key={index} title={device?.display_name + `(${device?.latest_device_point?.device_state?.drive_status})`} description={device?.active_state} coordinate={{ latitude: (device?.latest_device_point?.lat), longitude: (device?.latest_device_point?.lng) }} style={{}} pinColor={colors?.appThemeSecondary}  tracksViewChanges={false}>
+                    {<CustomMarker index={index} displayName={device?.display_name} width={ scale(20)} height={scale(50)} />}
               </Marker>
             )}
           {/* <Marker coordinate={({ latitude: parseFloat(origin?.latitude), longitude: parseFloat(origin?.longitude) })} style={{}}>

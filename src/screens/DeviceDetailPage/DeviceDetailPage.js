@@ -5,6 +5,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import { scale } from '../../utils/scaling';
 import { ThemeContext } from '../../context/Theme';
 import themeColors from '../../utils/themeColors';
+import { SaveData as StoreItem,RetrieveData as getItemData } from '../../utils/AsyncStorageHandeler';
 
 
 export default function DeviceDetailPage({ route }) {
@@ -27,9 +28,23 @@ export default function DeviceDetailPage({ route }) {
     });
   }, [navigationObj, deviceData]);
 
-  const saveDeviceInfo = ()=>{
-    setDeviceData(tempDeviceData)
-    setEdit(false)
+  const saveDeviceInfo = async()=>{
+    try{
+      setDeviceData(tempDeviceData)
+      await StoreItem('apiData', JSON.stringify(route?.params?.apiData?.map(data=>{
+        if(data?.device_id == tempDeviceData?.device_id){
+          return tempDeviceData
+        }
+        else{
+          return data
+        }
+      })))
+      setEdit(false)
+    }
+    catch(error){
+    console.log("🚀 ~ file: DeviceDetailPage.js ~ line 44 ~ saveDeviceInfo ~ error", error)
+      
+    }
   }
 
   useEffect(()=>{

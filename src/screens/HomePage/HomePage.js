@@ -47,20 +47,33 @@ const HomePage = () => {
   const fetchDevicesData = async()=>{
     try{
       let apiData = await getItemData('apiData');
+      let mergedData = []
+      let APIKEY = "Xl-8_ceibpMHqr4YZ72uFy5xQfjbOPXstocE8b_Zkmw"
+      let api = `https://track.onestepgps.com/v3/api/public/device?latest_point=true&api-key=${APIKEY}`
+      // const response = await fetch(api);
+      const response = await ApiService.get(api);
+
+      // Merge locally saved data and latest api data
       if(apiData && apiData?.length>0){
-        setApiData(apiData)
-        setFilterApiData(apiData);
+        mergedData = response?.result_list?.map(apiItem => {
+          const localItem = apiData.find(local => local.device_id === apiItem.device_id);
+          if (localItem) {
+            return {
+              ...apiItem, // Take all fields from the API
+              display_name: localItem.display_name,
+              make: localItem.make,              
+              model: localItem.model,            
+              factory_id: localItem.factory_id   
+            };
+          }
+          return apiItem;
+        });
       }
-      else{
-        let APIKEY = "Xl-8_ceibpMHqr4YZ72uFy5xQfjbOPXstocE8b_Zkmw"
-        let api = `https://track.onestepgps.com/v3/api/public/device?latest_point=true&api-key=${APIKEY}`
-        // const response = await fetch(api);
-        const response = await ApiService.get(api);
-        setApiData(response?.result_list || [])
-        setFilterApiData(response?.result_list || []);
-        setRefreshing(false)
-        await StoreItem('apiData', JSON.stringify(response?.result_list || []))
-      }
+
+      setApiData(mergedData?.length>0?mergedData:(response?.result_list || []))
+      setFilterApiData(mergedData?.length>0?mergedData:(response?.result_list || []))
+      setRefreshing(false)
+      await StoreItem('apiData', JSON.stringify(mergedData?.length>0?mergedData:(response?.result_list || [])))
     }
     catch(error){
       console.log("🚀 ~ file: HomePage.js ~ line 58 ~ cateh ~ error", error)
@@ -70,13 +83,14 @@ const HomePage = () => {
     }
   }
 
-  const DeviceCard = ({ device }) => {
+  const DeviceCard = ({ device, index }) => {
+  console.log("🚀 ~ file: HomePage.js ~ line 87 ~ DeviceCard ~ device, key", index)
     return (
       <TouchableOpacity 
-        onPress={() => { navigation.navigate('DeviceDetails', { device }) }} 
+        onPress={() => { navigation.navigate('DeviceDetails', { device, apiData }) }} 
         style={[styles.card,{backgroundColor:colors?.cardBg}]}
       >
-        <Text style={[styles.deviceName,{color:colors?.heading}]}>{device?.display_name}</Text>
+        <Text style={[styles.deviceName,{color:colors?.heading}]}>{device?.display_name} (#{index+1})</Text>
         
         <View style={styles.deviceInfoContainer}>
           <Text style={[styles.deviceInfo,{color:colors?.heading}]}>Device ID: {device?.device_id}</Text>
@@ -121,7 +135,7 @@ const HomePage = () => {
       }
       showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}  style={[styles.container,{backgroundColor: colors?.backgroundColor,}]}>
         {filterApiData?.map((device, index) => (
-          <DeviceCard key={index} device={device} />
+          <DeviceCard index={index} device={device} />
         ))}
       </ScrollView>:  
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
