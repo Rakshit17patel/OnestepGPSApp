@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIndicator, RefreshControl } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import { ThemeContext } from '../../context/Theme';
 import themeColors from '../../utils/themeColors';
@@ -7,6 +7,8 @@ import { scale } from '../../utils/scaling';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import ApiService from '../../utils/apiService';
 import Search from '../../ui-components/Search/Search';
+import { SaveData as StoreItem,RetrieveData as getItemData } from '../../utils/AsyncStorageHandeler';
+
 
 const HomePage = () => {
   const { systemThemeMode,appColorTheme, setAppColorTheme} = useContext(ThemeContext)
@@ -16,10 +18,17 @@ const HomePage = () => {
   const navigation = useNavigation();
   const [loader, setLoader] = useState(false)
   const [search, setSearch] = useState()
+  const [refreshing, setRefreshing] = useState(false)
 
   useFocusEffect(React.useCallback(()=>{
-    fetchDevicesData()
+    fetchInitalLoadData()
   },[]))
+
+  const fetchInitalLoadData = async()=>{
+    setLoader(true)
+    await fetchDevicesData()
+    setLoader(false)
+  }
 
   useEffect(()=>{
     if(search?.trim()?.length>0){
@@ -36,14 +45,29 @@ const HomePage = () => {
   },[search])
 
   const fetchDevicesData = async()=>{
-    setLoader(true)
-    let APIKEY = "Xl-8_ceibpMHqr4YZ72uFy5xQfjbOPXstocE8b_Zkmw"
-    let api = `https://track.onestepgps.com/v3/api/public/device?latest_point=true&api-key=${APIKEY}`
-    // const response = await fetch(api);
-    const response = await ApiService.get(api);
-    setApiData(response?.result_list || [])
-    setFilterApiData(response?.result_list || []);
-    setLoader(false)
+    try{
+      let apiData = await getItemData('apiData');
+      if(apiData && apiData?.length>0){
+        setApiData(apiData)
+        setFilterApiData(apiData);
+      }
+      else{
+        let APIKEY = "Xl-8_ceibpMHqr4YZ72uFy5xQfjbOPXstocE8b_Zkmw"
+        let api = `https://track.onestepgps.com/v3/api/public/device?latest_point=true&api-key=${APIKEY}`
+        // const response = await fetch(api);
+        const response = await ApiService.get(api);
+        setApiData(response?.result_list || [])
+        setFilterApiData(response?.result_list || []);
+        setRefreshing(false)
+        await StoreItem('apiData', JSON.stringify(response?.result_list || []))
+      }
+    }
+    catch(error){
+      console.log("🚀 ~ file: HomePage.js ~ line 58 ~ cateh ~ error", error)
+    }
+    finally{
+      // setLoader(false)
+    }
   }
 
   const DeviceCard = ({ device }) => {
@@ -88,7 +112,14 @@ const HomePage = () => {
         </TouchableOpacity>
       </View>
       {!loader && <Search customStyle={{width:scale(340)}} setSearch={setSearch} search={search} />}
-      {!loader ? <ScrollView showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}  style={[styles.container,{backgroundColor: colors?.backgroundColor,}]}>
+      {!loader ? <ScrollView 
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={() => {setRefreshing(refreshing);fetchDevicesData()}}
+        />
+      }
+      showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}  style={[styles.container,{backgroundColor: colors?.backgroundColor,}]}>
         {filterApiData?.map((device, index) => (
           <DeviceCard key={index} device={device} />
         ))}
