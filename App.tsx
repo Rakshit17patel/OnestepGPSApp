@@ -28,7 +28,7 @@ import {
 
 import { SaveData as StoreItem,RetrieveData as getItemData } from './src/utils/AsyncStorageHandeler';
 import Theme from './src/utils/themeColors';
-// import SplashScreen from 'react-native-splash-screen';
+import SplashScreen from 'react-native-splash-screen';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeContext } from './src/context/Theme';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
@@ -56,7 +56,7 @@ function App(): React.JSX.Element {
     let theme = await getItemData('theme');
     console.debug("🚀 ~ file: App.tsx ~ line 94 ~ checkThemeMode ~ theme", theme)
     setAppColorTheme(theme);
-    // SplashScreen.hide()
+    SplashScreen.hide()
   }
 
   const assignThemeMode = async ()=>{
