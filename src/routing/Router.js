@@ -7,7 +7,7 @@ import Theme from '../utils/themeColors';
 import { scale } from '../utils/scaling';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { ThemeContext } from '../context/Theme';
-import { getScreenBuilder } from './ScreenRegistry';
+import getScreenBuilder from './ScreenRegistry';
 
 const BottomTab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -19,7 +19,7 @@ const { systemThemeMode,appColorTheme,} = useContext(ThemeContext)
 
   useEffect(() => {
     navigationObj.navigate("Home")
-},[])
+    },[])
 
 
     // This is the stack navigator for the DeviceDetailsPage

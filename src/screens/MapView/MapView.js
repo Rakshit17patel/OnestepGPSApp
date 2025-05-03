@@ -49,6 +49,7 @@ export default function Track(props) {
     let api = `https://track.onestepgps.com/v3/api/public/device?latest_point=true&api-key=${APIKEY}`
     // const response = await fetch(api);
     const response = await ApiService.get(api);
+    console.log("🚀 ~ file: MapView.js ~ line 52 ~ fetchDevicesData ~ response", response)
     setApiData(response?.result_list || [])
   }
 
@@ -112,23 +113,21 @@ export default function Track(props) {
     <>
       <View style={{flex:1}}>
       {coordinates && apiData?.length>0 && <MapView
-          ref={ref => {
-            mapRef = ref
+          ref={ref => {mapRef = ref}}
+          // initialRegion={coordinates}
+          initialRegion={{
+            longitudeDelta: 0.003,
+            latitudeDelta: 0.003,
+            longitude: -122.4194,
+            latitude: 37.7749,
           }}
-          initialRegion={coordinates}
-          // initialRegion={{
-          //   longitudeDelta: 0.003,
-          //   latitudeDelta: 0.003,
-          //   longitude: 77.59104670126453,
-          //   latitude: 13.04269368886535,
-          // }}
-          region={coordinates}
-          // region={{
-          //   longitudeDelta: 0.003,
-          //   latitudeDelta: 0.003,
-          //   longitude: 77.59104670126453,
-          //   latitude: 13.04269368886535,
-          // }}
+          // region={coordinates}
+          region={{
+            longitudeDelta: 0.003,
+            latitudeDelta: 0.003,
+            longitude: -122.4194,
+            latitude: 37.7749,
+          }}
           style={{ height: '100%' }}
           provider={PROVIDER_GOOGLE}
           showsTraffic={false}
@@ -164,7 +163,8 @@ export default function Track(props) {
         >
           
           {apiData?.map((device,index) =>
-              <Marker key={index} title={device?.display_name} description={device?.active_state} coordinate={({ latitude: (device?.latest_device_point?.lat), longitude: (device?.latest_device_point?.lng) })} style={{}} pinColor={colors?.appThemeSecondary}  tracksViewChanges={false}>
+              // <Marker key={index} title={device?.display_name} description={device?.active_state} coordinate={({ latitude: (device?.latest_device_point?.lat), longitude: (device?.latest_device_point?.lng) })} style={{}} pinColor={colors?.appThemeSecondary}  tracksViewChanges={false}>
+              <Marker key={index} title={device?.display_name} description={device?.active_state} coordinate={{ longitude: -122.4194, latitude: 37.7749, }} style={{}} pinColor={colors?.appThemeSecondary}  tracksViewChanges={false}>
                     {<CustomMarker index={index} displayName={device?.display_name} width={ scale(60)} height={scale(50)} />}
               </Marker>
             )}

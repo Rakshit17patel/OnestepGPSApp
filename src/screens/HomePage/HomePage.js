@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import { ThemeContext } from '../../context/Theme';
@@ -6,26 +6,41 @@ import themeColors from '../../utils/themeColors';
 import { scale } from '../../utils/scaling';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import ApiService from '../../utils/apiService';
+import Search from '../../ui-components/Search/Search';
 
 const HomePage = () => {
   const { systemThemeMode,appColorTheme, setAppColorTheme} = useContext(ThemeContext)
   const colors = themeColors[appColorTheme=='systemDefault'?systemThemeMode:appColorTheme]
   const [apiData,setApiData] = useState([])
+  const [filterApiData,setFilterApiData] = useState([])
   const navigation = useNavigation();
+  const [search, setSearch] = useState()
 
   useFocusEffect(React.useCallback(()=>{
     fetchDevicesData()
   },[]))
 
+  useEffect(()=>{
+    if(search?.trim()?.length>0){
+      const filteredData = apiData.filter(device => {
+        const deviceName = device?.display_name || '';  // Default to an empty string if undefined or null
+        return (deviceName?.toLowerCase()?.includes(search?.toLowerCase()) ||
+        device?.device_id?.toLowerCase()?.includes(search?.toLowerCase()) || 
+        device?.model?.toLowerCase()?.includes(search?.toLowerCase()) || 
+        device?.latest_device_point?.device_state?.drive_status?.toLowerCase()?.includes(search?.toLowerCase()) || 
+        device?.active_state?.toLowerCase()?.includes(search?.toLowerCase()));
+      });
+      setFilterApiData(filteredData);
+    }
+  },[search])
+
   const fetchDevicesData = async()=>{
-    console.log("hello")
     let APIKEY = "Xl-8_ceibpMHqr4YZ72uFy5xQfjbOPXstocE8b_Zkmw"
     let api = `https://track.onestepgps.com/v3/api/public/device?latest_point=true&api-key=${APIKEY}`
-    console.log("🚀 ~ file: HomePage.js ~ line 20 ~ fetchDevicesData ~ api", api)
     // const response = await fetch(api);
     const response = await ApiService.get(api);
     setApiData(response?.result_list || [])
-    console.log("🚀 ~ file: HomePage.js ~ line 21 ~ fetchDevicesData ~ response", response)
+    setFilterApiData(response?.result_list || []);
   }
 
   const DeviceCard = ({ device }) => {
@@ -69,8 +84,9 @@ const HomePage = () => {
           <MaterialIcons style={{ fontSize: scale(25), fontWeight: 'bold', color:colors?.themeIcon}} name={(appColorTheme=='systemDefault'?systemThemeMode:appColorTheme)=='light'?'light-mode':'dark-mode'} />
         </TouchableOpacity>
       </View>
+      <Search customStyle={{width:scale(340)}} setSearch={setSearch} search={search} />
       <ScrollView showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}  style={[styles.container,{backgroundColor: colors?.backgroundColor,}]}>
-        {apiData?.map((device, index) => (
+        {filterApiData?.map((device, index) => (
           <DeviceCard key={index} device={device} />
         ))}
       </ScrollView>

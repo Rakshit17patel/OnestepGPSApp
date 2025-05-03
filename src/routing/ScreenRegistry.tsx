@@ -14,7 +14,7 @@ let screenBuilderRegistry = new Map<ScreenName, ScreenBuilderType>();
 /**
  * Returns a function for lazily loading a screen.
  */
-export function getScreenBuilder(screen: ScreenName): ScreenBuilderType {
+export default function getScreenBuilder(screen: ScreenName): ScreenBuilderType {
     if (!screenBuilderRegistry.has(screen)) {
         let cached: ScreenType | null = null;
         const builder = () => {
