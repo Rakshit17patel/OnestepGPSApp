@@ -18,7 +18,7 @@ export default function DeviceDetailPage({ route }) {
     navigationObj.setOptions({
       headerShown:true,
       headerTitleAlign: 'center',
-      title:device?.display_name,
+      title:device?.display_name +` (${device?.latest_device_point?.device_state?.drive_status})`,
       headerStyle: {
         backgroundColor: colors?.navColor
       }
@@ -39,6 +39,7 @@ export default function DeviceDetailPage({ route }) {
       <View style={[styles.section,{backgroundColor:colors?.cardBg}]}>
         <Text style={[styles.sectionTitle,{color:colors?.heading}]}>Basic Information</Text>
         <Text style={[styles.text,{color:colors?.heading}]}>Device ID: {device.device_id}</Text>
+        {/* <Text style={[styles.text,{color:colors?.heading}]}>Device Status: <Text style={{color:device?.active_state === 'active'?colors?.success:colors?.pending}}>{device.active_state}</Text></Text> */}
         <Text style={[styles.text,{color:colors?.heading}]}>Make: {device.make}</Text>
         <Text style={[styles.text,{color:colors?.heading}]}>Model: {device.model}</Text>
         <Text style={[styles.text,{color:colors?.heading}]}>Factory ID: {device.factory_id}</Text>
@@ -54,8 +55,8 @@ export default function DeviceDetailPage({ route }) {
       {/* Device Status */}
       <View style={[styles.section,{backgroundColor:colors?.cardBg}]}>
         <Text style={[styles.sectionTitle,{color:colors?.heading}]}>Device Status</Text>
-        <Text style={[styles.text,{color:colors?.heading}]}>Status: {device.active_state}</Text>
-        <Text style={[styles.text,{color:colors?.heading}]}>Drive Status: {device?.device_state?.drive_status}</Text>
+        <Text style={[styles.text,{color:colors?.heading}]}>Status: <Text style={{color:device?.active_state === 'active'?colors?.success:colors?.pending}}>{device.active_state}</Text></Text>
+        <Text style={[styles.text,{color:colors?.heading}]}>Drive Status: {device?.latest_device_point?.device_state?.drive_status}</Text>
         <Text style={[styles.text,{color:colors?.heading}]}>
           Last Updated: {device?.latest_device_point?.dt_server}
         </Text>

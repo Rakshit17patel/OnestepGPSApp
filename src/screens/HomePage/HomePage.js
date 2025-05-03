@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import { ThemeContext } from '../../context/Theme';
 import themeColors from '../../utils/themeColors';
@@ -14,6 +14,7 @@ const HomePage = () => {
   const [apiData,setApiData] = useState([])
   const [filterApiData,setFilterApiData] = useState([])
   const navigation = useNavigation();
+  const [loader, setLoader] = useState(false)
   const [search, setSearch] = useState()
 
   useFocusEffect(React.useCallback(()=>{
@@ -35,12 +36,14 @@ const HomePage = () => {
   },[search])
 
   const fetchDevicesData = async()=>{
+    setLoader(true)
     let APIKEY = "Xl-8_ceibpMHqr4YZ72uFy5xQfjbOPXstocE8b_Zkmw"
     let api = `https://track.onestepgps.com/v3/api/public/device?latest_point=true&api-key=${APIKEY}`
     // const response = await fetch(api);
     const response = await ApiService.get(api);
     setApiData(response?.result_list || [])
     setFilterApiData(response?.result_list || []);
+    setLoader(false)
   }
 
   const DeviceCard = ({ device }) => {
@@ -84,12 +87,23 @@ const HomePage = () => {
           <MaterialIcons style={{ fontSize: scale(25), fontWeight: 'bold', color:colors?.themeIcon}} name={(appColorTheme=='systemDefault'?systemThemeMode:appColorTheme)=='light'?'light-mode':'dark-mode'} />
         </TouchableOpacity>
       </View>
-      <Search customStyle={{width:scale(340)}} setSearch={setSearch} search={search} />
-      <ScrollView showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}  style={[styles.container,{backgroundColor: colors?.backgroundColor,}]}>
+      {!loader && <Search customStyle={{width:scale(340)}} setSearch={setSearch} search={search} />}
+      {!loader ? <ScrollView showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}  style={[styles.container,{backgroundColor: colors?.backgroundColor,}]}>
         {filterApiData?.map((device, index) => (
           <DeviceCard key={index} device={device} />
         ))}
-      </ScrollView>
+      </ScrollView>:  
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator
+            size="large"
+            color={colors?.appThemeSecondary}
+            style={{ backgroundColor: 'transparent' }}
+          />
+        </View>
+      }
+      {filterApiData?.length == 0 && !loader && <View style={{display:"flex",justifyContent:"center",alignItems:"center",height:scale(400)}}>
+          <Text style={{textAlign:'center'}}>No Items</Text>
+      </View>}
     </View>
   );
 };
@@ -133,7 +147,7 @@ const styles = StyleSheet.create({
     fontSize: scale(14),
     fontWeight: 'bold',
     position:'absolute',
-    top:scale(8),
+    bottom:scale(8),
     right:scale(8)
   },
 });

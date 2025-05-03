@@ -37,7 +37,7 @@ const HomePageStack = ()=> {
 
 
   return (<BottomTab.Navigator
-    initialRouteName={"Home"}
+    initialRouteName={"HomeStack"}
     // tabBarOptions={{
       // }}
       screenOptions={{
@@ -50,7 +50,7 @@ const HomePageStack = ()=> {
     }}>
     <BottomTab.Screen
         
-        name="Home"
+        name="HomeStack"
         // getScreenBuilder(`DeviceDetailsPage`)
         component={HomePageStack}
         options={{
