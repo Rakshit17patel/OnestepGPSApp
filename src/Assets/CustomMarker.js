@@ -3,12 +3,11 @@ import Svg, { Path } from 'react-native-svg'
 import { View, StatusBar, TouchableOpacity, Linking,Text, useColorScheme } from 'react-native'
 import theme from '../utils/themeColors'
 import { scale } from '../utils/scaling'
-import { Callout } from 'react-native-maps'
 
 function CustomMarker(props) {
   const currentTheme = theme[useColorScheme()]
   return (
-    <View style={{position: 'relative', }}>
+    <View style={{position: 'relative' }}>
       {/* <Callout>
                             <View style={{maxWidth: scale(200),}}>
                               <Text bold style={{ fontSize:scale(14),color:'white' }}>{props?.displayName}</Text>

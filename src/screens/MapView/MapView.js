@@ -6,7 +6,6 @@ import CustomMarker from '../../Assets/CustomMarker'
 import theme from '../../utils/themeColors';
 import { mapDarkMode } from '../../utils/mapDarkMode'
 import { ThemeContext } from '../../context/Theme'
-import LottieView from 'lottie-react-native';
 import { scale } from '../../utils/scaling';
 import ApiService from '../../utils/apiService'
 import Ionicons from 'react-native-vector-icons/Ionicons'
@@ -34,6 +33,12 @@ export default function Track(props) {
     latitude: latitude || LATITUDE,
   })
 
+
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     fetchDevicesData();
+  //   }, [])
+  // );
 
   useFocusEffect(
     React.useCallback(() => {
@@ -67,7 +72,7 @@ export default function Track(props) {
         <TouchableOpacity activeOpacity={0.5} onPress={()=>{navigationObj.goBack()}} style={{padding:scale(10)}}>
             <Ionicons
               name="arrow-back"
-              style={{fontSize: scale(25), fontWeight: 'bold',color: props.fontColor,...props?.headerLeft?.styles}}
+              style={{fontSize: scale(25), fontWeight: 'bold',color: colors?.heading}}
             />
         </TouchableOpacity>,
     })
@@ -114,20 +119,20 @@ export default function Track(props) {
       <View style={{flex:1}}>
       {coordinates && apiData?.length>0 && <MapView
           ref={ref => {mapRef = ref}}
-          // initialRegion={coordinates}
-          initialRegion={{
-            longitudeDelta: 0.003,
-            latitudeDelta: 0.003,
-            longitude: -122.4194,
-            latitude: 37.7749,
-          }}
-          // region={coordinates}
-          region={{
-            longitudeDelta: 0.003,
-            latitudeDelta: 0.003,
-            longitude: -122.4194,
-            latitude: 37.7749,
-          }}
+          initialRegion={coordinates}
+          // initialRegion={{
+          //   longitudeDelta: 0.003,
+          //   latitudeDelta: 0.003,
+          //   longitude: -122.4194,
+          //   latitude: 37.7749,
+          // }}
+          region={coordinates}
+          // region={{
+          //   longitudeDelta: 0.003,
+          //   latitudeDelta: 0.003,
+          //   longitude: -122.4194,
+          //   latitude: 37.7749,
+          // }}
           style={{ height: '100%' }}
           provider={PROVIDER_GOOGLE}
           showsTraffic={false}
@@ -163,10 +168,12 @@ export default function Track(props) {
         >
           
           {apiData?.map((device,index) =>
-              // <Marker key={index} title={device?.display_name} description={device?.active_state} coordinate={({ latitude: (device?.latest_device_point?.lat), longitude: (device?.latest_device_point?.lng) })} style={{}} pinColor={colors?.appThemeSecondary}  tracksViewChanges={false}>
-              <Marker key={index} title={device?.display_name} description={device?.active_state} coordinate={{ longitude: -122.4194, latitude: 37.7749, }} style={{}} pinColor={colors?.appThemeSecondary}  tracksViewChanges={false}>
-                    {<CustomMarker index={index} displayName={device?.display_name} width={ scale(60)} height={scale(50)} />}
-              </Marker>
+              // <Marker key={index} title={device?.display_name} description={device?.active_state} coordinate={{ longitude: -122.4194, latitude: 37.7749, }} style={{}} pinColor={colors?.appThemeSecondary}  tracksViewChanges={false}>
+              <>
+                <Marker key={index} title={device?.display_name + `(${device?.latest_device_point?.device_state?.drive_status})`} description={device?.active_state} coordinate={({ latitude: (device?.latest_device_point?.lat), longitude: (device?.latest_device_point?.lng) })} style={{}} pinColor={colors?.appThemeSecondary}  tracksViewChanges={false}>
+                      {<CustomMarker index={index} displayName={device?.display_name} width={ scale(30)} height={scale(50)} />}
+                </Marker>
+              </>
             )}
           {/* <Marker coordinate={({ latitude: parseFloat(origin?.latitude), longitude: parseFloat(origin?.longitude) })} style={{}}>
             </Marker> */}
