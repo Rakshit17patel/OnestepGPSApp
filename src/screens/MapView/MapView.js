@@ -1,4 +1,4 @@
-import React, {useContext, useLayoutEffect, useState} from 'react';
+import React, {useContext, useLayoutEffect, useRef, useState} from 'react';
 import {View, TouchableOpacity, StyleSheet} from 'react-native';
 import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
 import {useNavigation, useFocusEffect} from '@react-navigation/native';
@@ -13,78 +13,83 @@ import ApiService from '../../utils/apiService';
 import {RetrieveData as getItemData} from '../../utils/AsyncStorageHandeler';
 import config from '../../utils/config';
 
-const LATITUDE = 37.7749;
-const LONGITUDE = -122.4194;
-const LATITUDE_DELTA = 40;
-const LONGITUDE_DELTA = 40;
+const DEFAULT_COORDINATES = {
+  latitude: 37.7749,
+  longitude: -122.4194,
+  latitudeDelta: 40,
+  longitudeDelta: 40,
+};
 
 export default function Track({route}) {
-  const navigationObj = useNavigation();
+  const mapRef = useRef(null);
+  const navigation = useNavigation();
   const {systemThemeMode, appColorTheme} = useContext(ThemeContext);
-  const colors =
+  const theme =
     themeColors[
       appColorTheme === 'systemDefault' ? systemThemeMode : appColorTheme
     ];
 
   const [apiData, setApiData] = useState([]);
-  const [coordinates, setCoordinates] = useState({
-    latitude: route?.params?.latitude || LATITUDE,
-    longitude: route?.params?.longitude || LONGITUDE,
-    latitudeDelta: route?.params?.latitude ? 0.003 : LATITUDE_DELTA,
-    longitudeDelta: route?.params?.longitude ? 0.003 : LONGITUDE_DELTA,
+  const [coordinates] = useState({
+    latitude: route?.params?.latitude || DEFAULT_COORDINATES.latitude,
+    longitude: route?.params?.longitude || DEFAULT_COORDINATES.longitude,
+    latitudeDelta: DEFAULT_COORDINATES.latitudeDelta,
+    longitudeDelta: DEFAULT_COORDINATES.longitudeDelta,
   });
 
-  useFocusEffect(
-    React.useCallback(() => {
-      fetchDevicesData();
-      const intervalId = setInterval(fetchDevicesData, 10000);
-      return () => clearInterval(intervalId);
-    }, []),
-  );
-
-  const fetchDevicesData = async () => {
-    try {
-      const api = `${config.API_URL}/device?latest_point=true&api-key=${config.API_KEY}`;
-      const response = await ApiService.get(api);
-      const localData = await getItemData('apiData');
-      const enriched = response?.result_list?.map(apiItem => {
-        const localItem = localData?.find(
-          l => l.device_id === apiItem.device_id,
-        );
-        return localItem ? {...apiItem, ...localItem} : apiItem;
-      });
-      setApiData(enriched || []);
-    } catch (error) {
-      console.error('Error fetching tracking data:', error);
-    }
-  };
-
   useLayoutEffect(() => {
-    navigationObj.setOptions({
+    navigation.setOptions({
       headerShown: true,
       headerTitleAlign: 'center',
       title: 'Tracking',
-      headerStyle: {backgroundColor: colors.navColor},
+      headerStyle: {backgroundColor: theme.navColor},
       headerLeft: () => (
         <TouchableOpacity
-          onPress={() => navigationObj.goBack()}
+          onPress={() => navigation.goBack()}
           style={styles.backButton}>
           <Ionicons
             name="arrow-back"
-            style={[styles.backIcon, {color: colors.heading}]}
+            style={[styles.backIcon, {color: theme.heading}]}
           />
         </TouchableOpacity>
       ),
     });
-  }, [colors]);
+  }, [theme]);
 
-  if (!apiData.length) return null;
+  useFocusEffect(
+    React.useCallback(() => {
+      let isActive = true;
+      const loadDevices = async () => {
+        try {
+          const api = `${config.API_URL}/device?latest_point=true&api-key=${config.API_KEY}`;
+          const response = await ApiService.get(api);
+          const localData = await getItemData('apiData');
+          const enriched = response?.result_list?.map(apiItem => {
+            const localItem = localData?.find(
+              l => l.device_id === apiItem.device_id,
+            );
+            return localItem ? {...apiItem, ...localItem} : apiItem;
+          });
+          if (isActive) setApiData(enriched || []);
+        } catch (e) {
+          console.error('Map fetch error:', e);
+        }
+      };
+
+      loadDevices();
+      const intervalId = setInterval(loadDevices, 10000);
+      return () => {
+        clearInterval(intervalId);
+        isActive = false;
+      };
+    }, []),
+  );
 
   return (
     <View style={styles.container}>
       <MapView
+        ref={mapRef}
         provider={PROVIDER_GOOGLE}
-        ref={ref => (this.mapRef = ref)}
         style={styles.map}
         initialRegion={coordinates}
         region={coordinates}
@@ -105,45 +110,39 @@ export default function Track({route}) {
         showsBuildings
         zoomControlEnabled
         loadingEnabled
-        loadingIndicatorColor={colors.appThemePrimary}
+        loadingIndicatorColor={theme.appThemePrimary}
         mapType="standard">
-        {apiData.map((device, index) => (
-          <Marker
-            key={device.device_id}
-            title={`${device.display_name} (${device.latest_device_point?.device_state?.drive_status})`}
-            description={device.active_state}
-            coordinate={{
-              latitude: device.latest_device_point?.lat,
-              longitude: device.latest_device_point?.lng,
-            }}
-            pinColor={colors.appThemeSecondary}
-            tracksViewChanges={false}>
-            <CustomMarker
-              index={index}
-              displayName={device.display_name}
-              width={scale(20)}
-              height={scale(50)}
-            />
-          </Marker>
-        ))}
+        {apiData.map((device, index) => {
+          const lat = device?.latest_device_point?.lat;
+          const lng = device?.latest_device_point?.lng;
+
+          if (typeof lat !== 'number' || typeof lng !== 'number') return null;
+
+          return (
+            <Marker
+              key={device.device_id}
+              coordinate={{latitude: lat, longitude: lng}}
+              title={`${device.display_name} (${device.latest_device_point?.device_state?.drive_status})`}
+              description={device.active_state}
+              pinColor={theme.appThemeSecondary}
+              tracksViewChanges={false}>
+              <CustomMarker
+                index={index}
+                displayName={device.display_name}
+                width={40}
+                height={40}
+              />
+            </Marker>
+          );
+        })}
       </MapView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  map: {
-    height: '100%',
-    width: '100%',
-  },
-  backButton: {
-    padding: scale(10),
-  },
-  backIcon: {
-    fontSize: scale(25),
-    fontWeight: 'bold',
-  },
+  container: {flex: 1},
+  map: {height: '100%', width: '100%'},
+  backButton: {padding: scale(10)},
+  backIcon: {fontSize: scale(25), fontWeight: 'bold'},
 });

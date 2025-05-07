@@ -70,7 +70,7 @@ const HomePage = () => {
     try {
       let localData = await getItemData('apiData');
       let mergedData = [];
-      const api = `${config.API_URL}?latest_point=true&api-key=${config.API_KEY}`;
+      const api = `${config.API_URL}/device?latest_point=true&api-key=${config.API_KEY}`;
       const response = await ApiService.get(api);
 
       if (localData && localData.length > 0) {
