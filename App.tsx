@@ -5,75 +5,56 @@
  * @format
  */
 
-import React, { useEffect, useState } from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  ActivityIndicator,
-  Platform,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {Platform, StatusBar, StyleSheet, useColorScheme} from 'react-native';
 
 import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-import { SaveData as StoreItem,RetrieveData as getItemData } from './src/utils/AsyncStorageHandeler';
+  SaveData as StoreItem,
+  RetrieveData as getItemData,
+} from './src/utils/AsyncStorageHandeler';
 import Theme from './src/utils/themeColors';
 import SplashScreen from 'react-native-splash-screen';
-import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
-import { ThemeContext } from './src/context/Theme';
-import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
+import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
+import {ThemeContext} from './src/context/Theme';
+import {NavigationContainer, DefaultTheme} from '@react-navigation/native';
 import NavigationServices from './src/utils/NavigationServices';
 import Router from './src/routing/Router';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
 
 function App(): React.JSX.Element {
-  const [appColorTheme, setAppColorTheme] = useState('')
-  const systemThemeMode = useColorScheme()
-  const colors = Theme[appColorTheme=='systemDefault'?systemThemeMode:appColorTheme]
-
-
-  useEffect(() => {
-    checkThemeMode()
-  }, [])
+  const [appColorTheme, setAppColorTheme] = useState('');
+  const systemThemeMode = useColorScheme();
+  const colors =
+    Theme[appColorTheme == 'systemDefault' ? systemThemeMode : appColorTheme];
 
   useEffect(() => {
-    assignThemeMode()
-  }, [appColorTheme])
+    checkThemeMode();
+  }, []);
 
-  
-  const checkThemeMode = async ()=>{
+  useEffect(() => {
+    assignThemeMode();
+  }, [appColorTheme]);
+
+  const checkThemeMode = async () => {
     let theme = await getItemData('theme');
-    console.debug("🚀 ~ file: App.tsx ~ line 94 ~ checkThemeMode ~ theme", theme)
+
     setAppColorTheme(theme);
-    SplashScreen.hide()
-  }
+    SplashScreen.hide();
+  };
 
-  const assignThemeMode = async ()=>{
+  const assignThemeMode = async () => {
     if (!appColorTheme) {
-      let theme = 'systemDefault'
-      setAppColorTheme(theme)
-      await saveAppColorTheme(theme) // systemThemeMode
+      let theme = 'systemDefault';
+      setAppColorTheme(theme);
+      await saveAppColorTheme(theme); // systemThemeMode
+    } else {
+      await saveAppColorTheme(appColorTheme);
     }
-    else{
-      await saveAppColorTheme(appColorTheme)
-    }
-  }
+  };
 
-  const saveAppColorTheme = async (value:any) => {
-    await StoreItem('theme', JSON.stringify(value))
-  }
-
+  const saveAppColorTheme = async (value: any) => {
+    await StoreItem('theme', JSON.stringify(value));
+  };
 
   useEffect(() => {
     if (Platform.OS === 'android') {
@@ -82,25 +63,31 @@ function App(): React.JSX.Element {
     }
   }, []);
 
-
   const navTheme = {
     ...DefaultTheme,
     colors: {
       ...DefaultTheme.colors,
       background: colors?.backgroundColor,
-      text: colors?.heading
+      text: colors?.heading,
     },
-  };  
+  };
 
   return (
-    <SafeAreaView style={{flex:1,backgroundColor:colors?.backgroundColor}}>
-      <SafeAreaProvider >
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <StatusBar backgroundColor={colors?.appThemePrimary} barStyle={'light-content'} translucent={false}/>
-          <ThemeContext.Provider value={{ systemThemeMode,appColorTheme, setAppColorTheme }}>
-              <NavigationContainer theme={navTheme} ref={(ref) => NavigationServices.setTopLevelNavigator(ref)}>
-                    <Router />
-              </NavigationContainer>
+    <SafeAreaView style={{flex: 1, backgroundColor: colors?.backgroundColor}}>
+      <SafeAreaProvider>
+        <GestureHandlerRootView style={{flex: 1}}>
+          <StatusBar
+            backgroundColor={colors?.appThemePrimary}
+            barStyle={'light-content'}
+            translucent={false}
+          />
+          <ThemeContext.Provider
+            value={{systemThemeMode, appColorTheme, setAppColorTheme}}>
+            <NavigationContainer
+              theme={navTheme}
+              ref={ref => NavigationServices.setTopLevelNavigator(ref)}>
+              <Router />
+            </NavigationContainer>
           </ThemeContext.Provider>
         </GestureHandlerRootView>
       </SafeAreaProvider>
