@@ -81,7 +81,7 @@ export default function Router() {
               <MaterialCommunityIcons
                 name={'home'}
                 style={{
-                  fontSize: focused ? scale(30) : scale(25),
+                  fontSize: scale(25),
                   fontWeight: 'bold',
                   color: focused
                     ? appTheme?.appThemeSecondary
@@ -106,7 +106,7 @@ export default function Router() {
               <MaterialCommunityIcons
                 name={'map-marker-multiple'}
                 style={{
-                  fontSize: focused ? scale(30) : scale(25),
+                  fontSize: scale(25),
                   fontWeight: 'bold',
                   color: focused
                     ? appTheme?.appThemeSecondary
